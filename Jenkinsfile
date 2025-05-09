@@ -1,15 +1,13 @@
+
 pipeline {
     agent any
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         DOCKER_USER = 'maxdab'
-        GITHUB_REPO = 'https://github.com/MAXIMEDABOUT/Jenkins_devops_exams.git'
     }
 
     stages {
-        }
-
         stage('Build & Push Docker Images') {
             steps {
                 script {
@@ -33,7 +31,7 @@ pipeline {
             }
             steps {
                 script {
-                    def ns = env.BRANCH_NAME.toLowerCase()
+                    def ns = env.GIT_BRANCH?.tokenize('/')[-1]?.toLowerCase() ?: "dev"
                     def services = ['movie-service', 'cast-service']
 
                     for (s in services) {
