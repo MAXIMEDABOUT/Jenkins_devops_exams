@@ -18,7 +18,7 @@ pipeline {
             steps {
                 script {
                     def services = ['movie-service', 'cast-service']
-                    def tag = env.BRANCH_NAME.toLowerCase()
+                    def tag = env.GIT_BRANCH?.tokenize('/')[-1]?.toLowerCase() ?: "dev"
 
                     for (s in services) {
                         sh "docker build -t $DOCKER_USER/${s}:${tag} ${s}"
