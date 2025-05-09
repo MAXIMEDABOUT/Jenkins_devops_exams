@@ -8,10 +8,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git credentialsId: 'github-credentials', url: "${GITHUB_REPO}"
-            }
         }
 
         stage('Build & Push Docker Images') {
