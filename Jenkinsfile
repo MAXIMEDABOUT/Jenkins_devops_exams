@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         DOCKER_USER = 'maxdab'
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 
     stages {
@@ -11,7 +12,7 @@ pipeline {
             steps {
                 script {
                     def services = ['movie-service', 'cast-service']
-                    def tag = env.GIT_BRANCH?.tokenize('/')[-1]?.toLowerCase() ?: "dev"
+                    def tag = env.BRANCH_NAME?.toLowerCase() ?: "dev"
 
                     for (s in services) {
                         sh "docker build -t $DOCKER_USER/${s}:${tag} ${s}"
@@ -30,11 +31,11 @@ pipeline {
             }
             steps {
                 script {
-                    def ns = env.GIT_BRANCH?.tokenize('/')[-1]?.toLowerCase() ?: "dev"
+                    def ns = env.BRANCH_NAME?.toLowerCase() ?: "dev"
                     def services = ['movie-service', 'cast-service']
 
                     for (s in services) {
-                        sh "helm upgrade --install ${s} ./charts/${s} --namespace ${ns} --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=${ns}"
+                        sh "export KUBECONFIG=${KUBECONFIG} && helm upgrade --install ${s} ./charts/${s} --namespace ${ns} --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=${ns}"
                     }
                 }
             }
@@ -50,11 +51,12 @@ pipeline {
                     def services = ['movie-service', 'cast-service']
 
                     for (s in services) {
-                        sh "helm upgrade --install ${s} ./charts/${s} --namespace prod --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=prod"
+                        sh "export KUBECONFIG=${KUBECONFIG} && helm upgrade --install ${s} ./charts/${s} --namespace prod --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=prod"
                     }
                 }
             }
         }
     }
 }
+
 
