@@ -36,12 +36,14 @@ pipeline {
                 }
             }
             steps {
-                script {
-                    def ns = env.BRANCH_NAME?.toLowerCase() ?: "dev"
-                    def services = ['movie-service', 'cast-service']
+                dir("${env.WORKSPACE}") {
+                    script {
+                        def ns = env.BRANCH_NAME?.toLowerCase() ?: "dev"
+                        def services = ['movie-service', 'cast-service']
 
-                    for (s in services) {
-                        sh "export KUBECONFIG=${KUBECONFIG} && helm upgrade --install ${s} ./charts/${s} --namespace ${ns} --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=${ns}"
+                        for (s in services) {
+                            sh "export KUBECONFIG=${KUBECONFIG} && helm upgrade --install ${s} charts/${s} --namespace ${ns} --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=${ns}"
+                        }
                     }
                 }
             }
@@ -53,11 +55,13 @@ pipeline {
             }
             steps {
                 input message: "Déployer en production ?"
-                script {
-                    def services = ['movie-service', 'cast-service']
+                dir("${env.WORKSPACE}") {
+                    script {
+                        def services = ['movie-service', 'cast-service']
 
-                    for (s in services) {
-                        sh "export KUBECONFIG=${KUBECONFIG} && helm upgrade --install ${s} ./charts/${s} --namespace prod --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=prod"
+                        for (s in services) {
+                            sh "export KUBECONFIG=${KUBECONFIG} && helm upgrade --install ${s} charts/${s} --namespace prod --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=prod"
+                        }
                     }
                 }
             }
