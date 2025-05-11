@@ -8,6 +8,12 @@ pipeline {
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Build & Push Docker Images') {
             steps {
                 script {
@@ -58,5 +64,3 @@ pipeline {
         }
     }
 }
-
-
