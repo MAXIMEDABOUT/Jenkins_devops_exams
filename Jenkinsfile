@@ -11,7 +11,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-                sh 'pwd && ls -la && ls -R charts || true'  // Debug
+                sh 'pwd && ls -la && ls -R charts || true'  // Debug pour confirmer structure
             }
         }
 
@@ -45,7 +45,7 @@ pipeline {
                         for (s in services) {
                             sh """
                                 export KUBECONFIG=${KUBECONFIG}
-                                helm upgrade --install ${s} ./charts/${s} --namespace ${ns} --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=${ns}
+                                helm upgrade --install ${s} ./charts --namespace ${ns} --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=${ns}
                             """
                         }
                     }
@@ -66,7 +66,7 @@ pipeline {
                         for (s in services) {
                             sh """
                                 export KUBECONFIG=${KUBECONFIG}
-                                helm upgrade --install ${s} ./charts/${s} --namespace prod --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=prod
+                                helm upgrade --install ${s} ./charts --namespace prod --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=prod
                             """
                         }
                     }
