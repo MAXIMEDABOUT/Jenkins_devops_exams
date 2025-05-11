@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -41,8 +42,16 @@ pipeline {
                     script {
                         def ns = env.BRANCH_NAME?.toLowerCase() ?: "dev"
                         def nodePorts = [
-                            'movie-service': 30007,
-                            'cast-service' : 30008
+                            'movie-service': [
+                                dev: 30007,
+                                qa: 30009,
+                                staging: 30011
+                            ],
+                            'cast-service': [
+                                dev: 30008,
+                                qa: 30010,
+                                staging: 30012
+                            ]
                         ]
                         def services = ['movie-service', 'cast-service']
 
@@ -53,7 +62,7 @@ pipeline {
                                   --namespace ${ns} --create-namespace \
                                   --set image.repository=$DOCKER_USER/${s} \
                                   --set image.tag=${ns} \
-                                  --set service.nodePort=${nodePorts[s]}
+                                  --set service.nodePort=${nodePorts[s][ns]}
                             """
                         }
                     }
@@ -70,8 +79,12 @@ pipeline {
                 dir('.') {
                     script {
                         def nodePorts = [
-                            'movie-service': 30007,
-                            'cast-service' : 30008
+                            'movie-service': [
+                                prod: 30013
+                            ],
+                            'cast-service': [
+                                prod: 30014
+                            ]
                         ]
                         def services = ['movie-service', 'cast-service']
 
@@ -82,7 +95,7 @@ pipeline {
                                   --namespace prod --create-namespace \
                                   --set image.repository=$DOCKER_USER/${s} \
                                   --set image.tag=prod \
-                                  --set service.nodePort=${nodePorts[s]}
+                                  --set service.nodePort=${nodePorts[s]['prod']}
                             """
                         }
                     }
