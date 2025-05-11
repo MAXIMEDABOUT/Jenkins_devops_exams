@@ -11,6 +11,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+                sh 'pwd && ls -la && ls -R charts || true'  // Debug
             }
         }
 
@@ -36,13 +37,16 @@ pipeline {
                 }
             }
             steps {
-                dir("${env.WORKSPACE}") {
+                dir('.') {
                     script {
                         def ns = env.BRANCH_NAME?.toLowerCase() ?: "dev"
                         def services = ['movie-service', 'cast-service']
 
                         for (s in services) {
-                            sh "export KUBECONFIG=${KUBECONFIG} && helm upgrade --install ${s} charts/${s} --namespace ${ns} --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=${ns}"
+                            sh """
+                                export KUBECONFIG=${KUBECONFIG}
+                                helm upgrade --install ${s} ./charts/${s} --namespace ${ns} --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=${ns}
+                            """
                         }
                     }
                 }
@@ -55,12 +59,15 @@ pipeline {
             }
             steps {
                 input message: "Déployer en production ?"
-                dir("${env.WORKSPACE}") {
+                dir('.') {
                     script {
                         def services = ['movie-service', 'cast-service']
 
                         for (s in services) {
-                            sh "export KUBECONFIG=${KUBECONFIG} && helm upgrade --install ${s} charts/${s} --namespace prod --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=prod"
+                            sh """
+                                export KUBECONFIG=${KUBECONFIG}
+                                helm upgrade --install ${s} ./charts/${s} --namespace prod --create-namespace --set image.repository=$DOCKER_USER/${s} --set image.tag=prod
+                            """
                         }
                     }
                 }
